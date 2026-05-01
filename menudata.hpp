@@ -1,12 +1,17 @@
 #include<iostream>
 #include<vector>
-struct Menu_SimData{
+
+struct Menu_Data{
+
+};
+
+struct Menu_SimData:Menu_Data{
     int delay;
 };
 
 typedef struct Menu_SimData Menu_SimData;
 
-struct Menu_KioskData{
+struct Menu_KioskData:Menu_Data{
     int price;
     std::string label;
 };

@@ -4,15 +4,17 @@
 #include <queue>
 
 struct OrderCell{
-    int indx,option,delay;
+    int indx,option,delay,price;
 };
 struct Order{
     std::vector<OrderCell> cells;
     int id;
     int delay_total;
+    int price_total;
     void AddCell(OrderCell orderCell){
         cells.push_back(orderCell);
         delay_total+=orderCell.delay;
+        price_total+=orderCell.price;
     }
 
     bool operator<(const Order& other) const {

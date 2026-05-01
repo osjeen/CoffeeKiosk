@@ -1,7 +1,15 @@
 #include"kioskdata.hpp"
 #include"option_convert.hpp"
 int setDelay(Menu_QueryType qu){
-    return 1;
+    if(qu==Menu_QueryType::Bakery){
+        return 5;
+    }else if(qu==Menu_QueryType::Coffee){
+        return 1;
+    }else if(qu==Menu_QueryType::NonCoffee){
+        return 2;
+    }else if(qu==Menu_QueryType::Tea){
+        return 3;
+    }
 }
 
 /*
@@ -14,6 +22,29 @@ ulong_tea 2 3000 false
 y
 waffle 3 4000 true
 n
+2
+1
+0
+americano
+0
+0
+0
+0
+1000
+2
+4
+praffe
+0
+0
+0
+1
+2
+ulong_tea
+0
+1
+0
+1
+5500
 */
 
 void KioskData::AddMenu(){
@@ -72,7 +103,22 @@ int KioskData::GetMenu(std::string label){
 //인덱스,추가적으로 옵션을받아 오더에 오더 셀 추가
 void KioskData::SetNewOrder(int indx){
     int option=0;
-    cur_order.AddCell(OrderCell{indx,option,menuList[indx].sim_data.delay});
+
+    int val;
+    std::cout<<"식사:0 테이크아웃:1"<<std::endl;
+    std::cin>>val;
+    option = option_convert::set_takeout(option,val);  // LSB: ...1
+    std::cout<<"아이스:0 핫:1"<<std::endl;
+    std::cin>>val;
+    option = option_convert::set_temp(option, val);     // LSB: ...11
+    std::cout<<"톨:0 라지:1 그란데:2 옵션없음:3"<<std::endl;
+    std::cin>>val;
+    option = option_convert::set_size(option, val);  // LSB: ..1011
+    std::cout<<"디카페인:0 연하게:1 샷추가:2 옵션없음:3"<<std::endl;
+    std::cin>>val;
+    option = option_convert::set_shot(option, val);  // LSB: 001011
+
+    cur_order.AddCell(OrderCell{indx,option,menuList[indx].sim_data.delay,menuList[indx].GetData().price});
 }
 
 void RequestOrder(KioskData* kioskData){
@@ -83,7 +129,12 @@ void RequestOrder(KioskData* kioskData){
     std::cout<<std::endl;
     for(int i=0;i<t;i++){
         std::cout<<i<<" 번째 주문"<<std::endl;
-        while(1){
+        int quantt;
+        std::cout<<"주문수량:";
+        std::cin>>quantt;
+        std::cout<<std::endl;
+        //예외처리
+        for(int j=0;j<quantt;){
             int qu;
             std::cout<<"New(4) | 커피(0) | 논커피(1) | 티(2) | 베이커리(3) | 전체(5)"<<std::endl;
             std::cout<<"탭 선택:";
@@ -99,21 +150,24 @@ void RequestOrder(KioskData* kioskData){
             int indx=kioskData->GetMenu(label);
             if(indx<0)continue;
             kioskData->SetNewOrder(indx);
-
-            //결제
-            std::cout<<"결제 하겠습니까?(y/n):";
-            char yorn;
-            std::cin>>yorn;
-            if(yorn=='y'){
-                kioskData->orderData.AddOrder(kioskData->cur_order);
-
-                //오더 초기화
-                kioskData->cur_order.cells.clear();
-                kioskData->cur_order.delay_total=0;
-                kioskData->cur_order.id++;
-                break;
-            }
+            j++;
         }
+
+        //결제
+        std::cout<<"결제금액:"<<kioskData->cur_order.price_total<<std::endl;
+        std::cout<<"잔액:";
+        int balance;
+        std::cin>>balance;
+        //예외처리
+
+        kioskData->orderData.AddOrder(kioskData->cur_order);
+        kioskData->addProfit(kioskData->cur_order.price_total);
+
+        //오더 초기화
+        kioskData->cur_order.cells.clear();
+        kioskData->cur_order.delay_total=0;
+        kioskData->cur_order.id++;
+        kioskData->cur_order.price_total=0;
     }
 }
 
@@ -148,7 +202,7 @@ void Simulation(KioskData* kioskData){
                 std::cout<<
                 kioskData->menuList[cell.indx].GetData().label
                 <<std::endl;
-                option_convert::PrintOption(cell.option);
+                option_convert::print_options(cell.option);
             }
             std::cout<<"총 "<<val.cells.size()<<"개 준비 되었습니다."<<std::endl;
         }

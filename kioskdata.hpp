@@ -22,4 +22,7 @@ class KioskData{
     int getProfit(){
         return profit;
     }
+    void addProfit(int val){
+        profit+=val;
+    }
 };
