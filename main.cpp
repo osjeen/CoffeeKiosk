@@ -134,6 +134,7 @@ void RequestOrder(KioskData* kioskData){
         std::cin>>quantt;
         std::cout<<std::endl;
         //예외처리
+        if(quantt<=0) throw 0;
         for(int j=0;j<quantt;){
             int qu;
             std::cout<<"New(4) | 커피(0) | 논커피(1) | 티(2) | 베이커리(3) | 전체(5)"<<std::endl;
@@ -159,6 +160,7 @@ void RequestOrder(KioskData* kioskData){
         int balance;
         std::cin>>balance;
         //예외처리
+        if(balance<kioskData->cur_order.price_total)throw (float)(kioskData->cur_order.price_total-balance);
 
         kioskData->orderData.AddOrder(kioskData->cur_order);
         kioskData->addProfit(kioskData->cur_order.price_total);
@@ -218,7 +220,15 @@ int main(){
     std::cout<<"카페 관리 시스템 v0.1"<<std::endl;
     ManuallyAddMenu(kioskData);
 
-    RequestOrder(kioskData);
+    try{
+        RequestOrder(kioskData);
+    }catch(float b){
+        std::cout<<"결제 오류:"<<(int)b<<"원이 부족합니다."<<std::endl;
+        return -1;
+    }catch(int i){
+        std::cout<<"수량 오류:"<<i<<"는 유효하지 않습니다."<<std::endl;
+        return -1;
+    }
 
     Simulation(kioskData);
 }

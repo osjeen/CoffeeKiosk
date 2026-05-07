@@ -1,9 +1,7 @@
 #include<iostream>
 #include<vector>
 
-struct Menu_Data{
-
-};
+struct Menu_Data{};
 
 struct Menu_SimData:Menu_Data{
     int delay;
